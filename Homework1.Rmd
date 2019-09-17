@@ -1,0 +1,39 @@
+---
+title: "Homework1"
+author: "Steven Lawrence"
+date: "September 17, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Loading Libraries
+```{r, message=FALSE,warning=FALSE}
+
+library(tidyverse)
+library(arsenal)
+require(knitr)
+require(survival)
+
+```
+##Loading in data set
+
+```{r loading in data, message=FALSE, warning= FALSE}
+exercise = readxl::read_xlsx("data/Exercise.xlsx",col_names = TRUE, skip = 1)
+exercise = janitor::clean_names(exercise)
+exercise
+view(exercise)
+```
+
+
+##Discriptive Statistics
+```{r, results='asis'}
+attach(exercise)
+labels(exercise)<- c(group ="Treatment Assignment")
+tab1<-tableby(group ~ age + gender + race + depression + smokes )
+
+summary(tab1, text = TRUE, labels)
+```
+
