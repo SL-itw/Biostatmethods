@@ -1,0 +1,52 @@
+---
+title: "Hw3"
+author: "Steven Lawrence"
+date: "October 29, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      collapse = TRUE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%")
+```
+
+```{r, message=FALSE}
+library(tidyverse)
+library(arsenal)
+```
+
+```{r}
+read_csv("./data/SurvCancer.csv") %>% 
+  janitor::clean_names() %>% 
+ ggplot(aes(survival))+geom_histogram()
+```
+
+
+
+```{r, message=FALSE,results='asis'}
+SC = read_csv("./data/SurvCancer.csv") %>% 
+  janitor::clean_names() %>% 
+  group_by(organ) 
+  
+
+mycontrols  <- tableby.control(test=F, total=F, numeric.simplify = TRUE,
+                               numeric.test="kwt",
+                               numeric.stats="medianq1q3",
+            
+                               stats.labels=list( medianq1q3 = "Median[IQR]"),
+                               digits = 2,
+                               digits.count = 2,
+                               digits.p = 3
+                               )
+mylabels <- list(organ = "Group", mean_survival = "Median Survival Time")
+
+tab1<-tableby(organ ~ survival , control = mycontrols, data = SC)
+
+summary(tab1, text = TRUE,labelTranslations = mylabels)
+
+```
+
+

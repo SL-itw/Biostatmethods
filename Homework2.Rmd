@@ -1,0 +1,93 @@
+---
+title: "Homework2"
+author: "Steven Lawrence"
+date: "October 7, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(arsenal)
+```
+
+#Prolem 1
+The incedence of uveal melanoma is 5 per million in the US.  Therefore in NYC of 8.5 million the incedence is `5 * 8.5` expected new cases for 2018. `X ~ Po(42.5)`.
+
+##Part a
+What is the probability that in NYC (population of 8.5 million reported in 2018), exactly 30 cases occur in a given year?
+
+####Calculating lamda
+
+lamda  = `r 5*8.5`
+
+####Calculation probability of seeing 30 new cases in NYC
+`P(X = 30)`:~  `r (42.5^30)*exp(-42.5)/factorial(30)*100`% chance of observing 30 cases in 2018.  
+
+##Part b
+Compute the same probability in a) by the mentioned racial/ethnic groups and comment on the findings. Demographic data of NYC in 2018: 14.0% Asians, 42.8% non-Hispanic Whites, 24.3% Black.
+
+####Calculating population size
+The population size of Asians, non-Hispanic Whites, and Blacks are = `r signif(0.14 * 8.5, digits = 2)`, `r signif(0.428 * 8.5, digits = 2)`, and `r signif(0.243 * 8.5, digits = 2)` million respectively. 
+
+####Calculating probability of seeing 30 new cases for each population
+The expected amount of new cases in the Asian population is, lamda = `r 1.2 * 0.31`, and `P(X = 30)`:~ `r (0.372^30)*exp(-0.372)/factorial(30)`
+
+The expected amount of new cases in the non-Hispanic Whites population is, lamda =  `r 3.6 * 6.02`, and `P(X = 30)`:~ `r (21.672^30)*exp(-21.672)/factorial(30)`
+
+The expected amount of new cases in the Black population is, lamda = `r 2.1 * 0.39`, and `P(X = 30)`:~ `r (0.819^30)*exp(-0.819)/factorial(30)`
+
+####Comment
+Given the low incidece in the Asian and Black population, it is highly unlikely to observe 30 new cases in the year of 2018 for uveal melanoma. In contrast, given the high incidence of the disease in the non- White Hispanic population  there is a 1.7% chance of observing 30 new cases, which is higher than the state wide expectation. 
+
+
+#Problem 2
+
+t = `(E(x1) - E(x2))/sqrt(sd^2(1/n1 + 1/ n2))`
+```{r, echo=FALSE, eval=FALSE, message=FALSE}
+exercise = readxl::read_xlsx("data/Exercise.xlsx",col_names = TRUE, skip = 1) %>% 
+ janitor::clean_names()
+
+attach(exercise)
+exercise$groupf[group ==1]<- "Intervention Group"
+exercise$groupf[group ==0]<- "Control"
+detach(exercise)
+
+exercise<-rename(exercise, pre_BMI = pre_13 , post_BMI =post_14)
+
+mylabels <- list(groupf = "Treatment Group")
+
+mycontrols  <- tableby.control(test=T, total=F, numeric.simplify = TRUE,
+                               numeric.test="kwt",
+                               numeric.stats=c( "meansd","medianq1q3"),
+                               stats.labels=list(N='Count', meansd='Mean'),
+                               digits = 2,
+                               digits.p = 3
+                               )
+
+ exercise<- exercise %>% 
+  mutate(
+        bmi_change = post_BMI- pre_BMI) %>% 
+  select(groupf,post_BMI, pre_BMI, bmi_change) 
+
+t.test(exercise$pre_BMI[exercise$groupf=="Intervention Group"], exercise$post_BMI[exercise$groupf=="Intervention Group"], paired = T, alternative = "two.sided")
+
+I_preBMI= mean(exercise$pre_BMI[exercise$groupf=="Intervention Group"])
+I_postBMI= mean(exercise$post_BMI[exercise$groupf=="Intervention Group"])
+
+
+
+
+t.test(exercise$pre_BMI[exercise$groupf=="Control"], exercise$post_BMI[exercise$groupf=="Control"], paired = T, alternative = "two.sided")
+
+t.test(exercise$bmi_change[exercise$groupf=="Intervention Group"], exercise$bmi_change[exercise$groupf=="Control"], paired = T, alternative = "two.sided")
+  
+
+tab_change<- tableby(groupf ~ bmi_change, control = mycontrols, data = exercise)
+
+summary(tab_change, text = T, labelTranslations =  mylabels)
+
+
+```
+
